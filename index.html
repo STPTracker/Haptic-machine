@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>HaptiSync — Video Haptics</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0d12;--panel:#151923;--line:#2a3040;--muted:#a4adbf;--text:#f4f6fb;--accent:#8b7cff;--accent2:#47dfb1}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1a1d31 0,#0b0d12 58%);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:1000px;margin:auto;padding:22px 16px 50px}.top{display:flex;align-items:center;gap:12px;margin-bottom:20px}.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--accent),#53d7c0);display:grid;place-items:center;font-size:23px;color:#0a0b10}.eyebrow{color:var(--accent2);font-size:11px;letter-spacing:2px;font-weight:800}.top h1{margin:0;font-size:25px;letter-spacing:-.7px}.top p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.layout{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}.panel{background:rgba(21,25,35,.92);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 16px 45px #0002}.panel h2{font-size:16px;margin:0 0 12px}.sub{color:var(--muted);font-size:13px;margin-top:-6px;margin-bottom:14px}
+.drop{border:1.5px dashed #4b5270;border-radius:15px;padding:25px 14px;text-align:center;background:#10131c}.drop strong{display:block;font-size:15px;margin:7px 0}.drop small{color:var(--muted)}input[type=file]{display:none}button,.filebtn{border:0;border-radius:12px;padding:11px 14px;background:var(--accent);color:#fff;font-weight:750;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px}button.secondary{background:#252b3a;border:1px solid #3a4256;color:#eef0f7}button.green{background:var(--accent2);color:#08110f}button.danger{background:#48262e;color:#ffcbd1}.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.video-wrap{margin-top:14px;background:#050609;border-radius:14px;overflow:hidden;min-height:130px;display:grid;place-items:center}video{width:100%;max-height:410px;display:block}.empty-video{color:#7f899d;padding:35px 12px;text-align:center;font-size:13px}
+.statrow{display:flex;gap:8px;margin:12px 0}.stat{flex:1;background:#10131c;border:1px solid var(--line);border-radius:12px;padding:10px}.stat span{display:block;color:var(--muted);font-size:11px}.stat b{font-size:19px}
+label{font-size:12px;color:var(--muted);display:block;margin:12px 0 5px}input[type=number],input[type=text],select{width:100%;background:#0f121a;border:1px solid #333b50;border-radius:10px;color:var(--text);padding:10px;font:inherit}input[type=range]{width:100%;accent-color:var(--accent)}.timeline{height:58px;background:#0d1017;border:1px solid var(--line);border-radius:12px;position:relative;overflow:hidden;margin-top:10px}.track{position:absolute;inset:0 8px}.marker{position:absolute;top:8px;bottom:8px;width:4px;min-width:0;padding:0;border-radius:4px;background:var(--accent2);box-shadow:0 0 12px #47dfb166;cursor:pointer}.playhead{position:absolute;top:0;bottom:0;width:2px;background:#fff;pointer-events:none}.timeline-empty{position:absolute;inset:0;display:grid;place-items:center;color:#697388;font-size:12px}.markerlist{display:flex;flex-direction:column;gap:7px;margin-top:12px;max-height:190px;overflow:auto}.markeritem{display:flex;align-items:center;gap:9px;background:#10131c;border:1px solid #292f40;border-radius:10px;padding:9px}.markeritem .dot{width:8px;height:8px;background:var(--accent2);border-radius:50%}.markeritem .when{font-variant-numeric:tabular-nums;font-weight:750}.markeritem .kind{color:var(--muted);font-size:12px;flex:1}.markeritem button{padding:5px 8px;border-radius:8px}.notice{margin-top:15px;padding:12px 13px;border-radius:12px;background:#211e35;border:1px solid #393354;color:#dcd7ff;font-size:12px}.status{font-size:12px;color:var(--muted);margin-top:10px;min-height:18px}.status.ok{color:var(--accent2)}.status.warn{color:#ffc978}.footer{font-size:11px;color:#7f899d;text-align:center;margin-top:18px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.top h1{font-size:22px}.panel{padding:15px}}
+</style>
+</head>
+<body><main>
+<header class="top"><div class="logo">〰</div><div><div class="eyebrow">VIDEO • VIBRATION • SYNC</div><h1>HaptiSync</h1><p>Add tactile beats to your favourite videos.</p></div></header>
+<div class="layout">
+<section class="panel">
+<h2>01 / Choose a video</h2><p class="sub">Your video stays on your device in this browser session.</p>
+<div class="drop"><div style="font-size:28px">🎬</div><strong id="filename">Drop in a video, or browse files</strong><small>MP4, WebM and other browser-supported formats</small><div class="controls" style="justify-content:center"><label class="filebtn" for="file" style="margin:0;color:white">＋ Browse video</label><input id="file" type="file" accept="video/*"></div></div>
+<div class="video-wrap" id="videowrap"><div class="empty-video">Your video preview appears here</div></div>
+<div class="controls"><button class="secondary" id="test">〰 Test vibration</button><button class="secondary" id="stop">■ Stop vibration</button></div>
+<div class="status" id="vibstatus">Tap “Test vibration” to check whether this device/browser supports haptics.</div>
+<div class="notice">🔒 <b>Local-first:</b> this demo does not upload your video or ask for broad storage access. You choose a file with the system file picker.</div>
+</section>
+<section class="panel">
+<h2>02 / Create haptic cues</h2><p class="sub">Play the video and add a vibration cue at the current moment.</p>
+<div class="statrow"><div class="stat"><span>VIDEO LENGTH</span><b id="duration">—</b></div><div class="stat"><span>HAPTIC CUES</span><b id="cuecount">0</b></div></div>
+<label for="strength">Vibration strength · approximate</label><select id="strength"><option value="light">Light · 35 ms</option><option value="medium" selected>Medium · 80 ms</option><option value="strong">Strong · 150 ms</option><option value="impact">Impact · pulse pattern</option><option value="double">Double tap</option><option value="heartbeat">Heartbeat</option></select>
+<label for="intensity">Cue intensity <span id="intensitylabel">70%</span></label><input id="intensity" type="range" min="25" max="100" value="70">
+<div class="controls"><button id="addcue" disabled>＋ Add cue at playhead</button><button id="addbeat" class="secondary" disabled>＋ Add cue in 1s</button><button id="auto" class="green" disabled>✦ Auto-generate from audio</button></div>
+<div class="timeline" id="timeline"><div class="timeline-empty" id="timelineempty">Load a video to build your haptic timeline</div><div class="track" id="track"></div><div class="playhead" id="playhead" style="left:0"></div></div>
+<label for="scrub">Scrub video timeline</label><input id="scrub" type="range" min="0" max="1000" value="0" disabled>
+<div class="controls"><button class="green" id="playhaptics" disabled>▶ Play video + haptics</button><button id="export" class="secondary" disabled>Export cue file (.json)</button><button id="clear" class="danger" disabled>Clear cues</button></div>
+<div class="markerlist" id="markerlist"><div class="status">Your cues will appear here.</div></div>
+<div class="status" id="status"></div>
+</section></div>
+<div class="footer">HaptiSync prototype · Best tested in Android Chrome on a phone with a vibration motor.</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let video=null, objectUrl=null, selectedFile=null, cues=[], raf=0, lastCueId=null, triggeredCueIds=new Set(), isSyncPlaying=false, audioCtx=null;
+const patterns={
+ light:[25], medium:[70], strong:[130], impact:[30,25,45,25,85],
+ double:[35,45,35], heartbeat:[70,110,35]
+};
+function fmt(s){if(!Number.isFinite(s))return "—";let m=Math.floor(s/60),sec=(s%60).toFixed(1).padStart(4,"0");return `${m}:${sec}`;}
+function msg(text,kind=""){ $("status").textContent=text;$("status").className="status "+kind; }
+function vibMsg(text,kind=""){ $("vibstatus").textContent=text;$("vibstatus").className="status "+kind; }
+function patternNow(){return (patterns[$("strength").value]||patterns.medium).map((v,i)=>i%2===0?Math.max(10,Math.round(v*Number($("intensity").value)/70)):v);}
+function vibrate(p){
+ if(!("vibrate" in navigator)){vibMsg("This browser does not expose vibration. Open the GitHub Pages link in Chrome on Android, not an in-app browser.","warn");return false;}
+ try{
+  const ok=navigator.vibrate(p);
+  vibMsg(ok?"Vibration request sent. If you feel nothing, check Android vibration settings and try Chrome directly.":"The browser rejected vibration. Try a direct tap in Chrome and check system settings.","warn");
+  return ok;
+ }catch(e){vibMsg("Vibration was blocked by the browser/device. Try Chrome directly on Android.","warn");return false;}
+}
+function addCue(time,pattern=patternNow(),label=$("strength").selectedOptions[0]?.text||"Manual"){
+ if(!video)return;time=Math.max(0,Math.min(video.duration||0,time));
+ cues.push({id:(Date.now()+Math.random()),time,pattern:[...pattern],label,source:"manual"});
+ cues.sort((a,b)=>a.time-b.time);renderCues();msg("Cue added at "+fmt(time)+".","ok");
+}
+function renderCues(){
+ cues.sort((a,b)=>a.time-b.time);$("cuecount").textContent=cues.length;
+ $("track").innerHTML="";$("markerlist").innerHTML="";
+ cues.forEach(c=>{
+  const marker=document.createElement("button");marker.className="marker";marker.style.left=((video?.duration?c.time/video.duration:0)*100)+"%";marker.title=fmt(c.time)+" · "+c.label;marker.setAttribute("aria-label","Seek to cue "+fmt(c.time));marker.onclick=()=>{video.currentTime=c.time;};$("track").appendChild(marker);
+  const row=document.createElement("div");row.className="markeritem";
+  const dot=document.createElement("span");dot.className="dot";
+  const when=document.createElement("span");when.className="when";when.textContent=fmt(c.time);
+  const kind=document.createElement("span");kind.className="kind";kind.textContent=c.label;
+  const test=document.createElement("button");test.className="secondary";test.textContent="Test";test.onclick=()=>vibrate(c.pattern);
+  const del=document.createElement("button");del.className="danger";del.textContent="×";del.setAttribute("aria-label","Delete cue");del.onclick=()=>{cues=cues.filter(x=>x.id!==c.id);renderCues();};
+  row.append(dot,when,kind,test,del);row.onclick=(e)=>{if(e.target===row||e.target===when||e.target===kind)video.currentTime=c.time;};$("markerlist").appendChild(row);
+ });
+ $("timelineempty").style.display=video?"none":"grid";$("clear").disabled=!cues.length;$("export").disabled=!cues.length;
+}
+function syncUi(){if(!video)return;const p=video.duration?video.currentTime/video.duration:0;$("scrub").value=Math.round(p*1000);$("playhead").style.left=(p*100)+"%";}
+$("file").addEventListener("change",e=>{
+ const f=e.target.files?.[0];if(!f)return;selectedFile=f;if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(f);
+ video=document.createElement("video");video.controls=true;video.playsInline=true;video.preload="metadata";video.src=objectUrl;
+ $("videowrap").replaceChildren(video);$("filename").textContent=f.name;
+ video.addEventListener("loadedmetadata",()=>{$("duration").textContent=fmt(video.duration);$("addcue").disabled=false;$("addbeat").disabled=false;$("auto").disabled=false;$("scrub").disabled=false;$("playhaptics").disabled=false;renderCues();msg("Video ready. Add cues manually or analyze the audio.","ok");});
+ video.addEventListener("timeupdate",syncUi);video.addEventListener("seeked",syncUi);
+ video.addEventListener("pause",()=>{if(isSyncPlaying){isSyncPlaying=false;if(raf)cancelAnimationFrame(raf);$("playhaptics").textContent="▶ Play video + haptics";}});
+ video.addEventListener("ended",()=>{isSyncPlaying=false;navigator.vibrate?.(0);$("playhaptics").textContent="▶ Play video + haptics";});
+});
+$("scrub").addEventListener("input",()=>{if(video&&video.duration){video.currentTime=Number($("scrub").value)/1000*video.duration;triggeredCueIds.clear();}});
+$("addcue").onclick=()=>addCue(video?.currentTime||0);
+$("addbeat").onclick=()=>addCue((video?.currentTime||0)+1);
+$("test").onclick=()=>{
+ if(!("vibrate" in navigator)){
+  vibMsg("This page/browser does not expose vibration. Open index.html directly in Google Chrome on Android, not a file preview app. If still unavailable, use a native APK.","warn");
+  return;
+ }
+ const ok=vibrate(patternNow());
+ if(ok) vibMsg("Vibration request sent. If you felt nothing, turn off Silent/Do Not Disturb, check vibration settings, and test in Chrome.","ok");
+};
+$("stop").onclick=()=>{navigator.vibrate?.(0);vibMsg("Stop vibration requested.");};
+$("intensity").oninput=()=> $("intensitylabel").textContent=$("intensity").value+"%";
+$("clear").onclick=()=>{cues=[];renderCues();msg("All cues cleared.");};
+$("playhaptics").onclick=async()=>{
+ if(!video)return;
+ if(isSyncPlaying){video.pause();isSyncPlaying=false;if(raf)cancelAnimationFrame(raf);navigator.vibrate?.(0);$("playhaptics").textContent="▶ Play video + haptics";return;}
+ isSyncPlaying=true;lastCueId=null;try{if(audioCtx&&audioCtx.state==="suspended")await audioCtx.resume();await video.play();$("playhaptics").textContent="Ⅱ Pause";tick();}catch(e){isSyncPlaying=false;msg("Tap the video play button first, then try again.","warn");}
+};
+function tick(){
+ if(!isSyncPlaying||!video)return;
+ const t=video.currentTime;
+ sampleLiveAudio();
+ // Trigger each cue once when the playback clock crosses its timestamp.
+ for(const c of cues){if(!triggeredCueIds.has(c.id)&&t>=c.time&&t-c.time<0.30){vibrate(c.pattern);triggeredCueIds.add(c.id);lastCueId=c.id;}}
+ if(video.paused||video.ended){isSyncPlaying=false;$("playhaptics").textContent="▶ Play video + haptics";return;}
+ syncUi();raf=requestAnimationFrame(tick);
+}
+$("export").onclick=()=>{
+ const data={app:"HaptiSync",version:1,videoName:$("filename").textContent,durationSeconds:video?.duration||null,generatedAt:new Date().toISOString(),cues:cues.map(c=>({timeSeconds:Number(c.time.toFixed(3)),patternMilliseconds:c.pattern,label:c.label,source:c.source||"manual"}))};
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="haptisync-timeline.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);msg("Timeline exported as JSON.","ok");
+};
+$("auto").onclick=async()=>{
+ if(!video||!selectedFile){msg("Choose a video first.");return;}
+ const button=$("auto");button.disabled=true;button.textContent="Analyzing audio…";msg("Analyzing the audio track for strong sound peaks. Keep this tab open.");
+ try{
+  const peaks=await analyzeAudio(selectedFile,video.duration);
+  if(!peaks.length){msg("No clear peaks detected. Try adjusting audio or adding cues manually.","warn");}
+  else{
+   // Replace existing automatic cues but preserve manual cues.
+   cues=cues.filter(c=>c.source!=="auto");
+   for(const p of peaks)cues.push({id:Date.now()+Math.random(),time:p.time,pattern:p.pattern||[Math.max(100,Math.round((p.duration||0.2)*1000))],label:"Auto · "+Number(p.duration||0).toFixed(1)+"s audio",source:"auto"});
+   cues.sort((a,b)=>a.time-b.time);renderCues();msg("Generated "+peaks.length+" suggested cues. Review and edit them before playback.","ok");
+  }
+ }catch(e){
+  msg("This video's audio could not be decoded offline. Starting live audio-peak detection instead: press Play video + haptics and let it play. Peaks will create cues as they happen.","warn");
+  try{await startLiveAnalysis();}catch(err){msg("Audio analysis failed and live analysis is unavailable. Try another MP4/WebM or add cues manually.","warn");}
+ }
+ finally{button.disabled=false;button.textContent="✦ Auto-generate from audio";}
+};
+async function startLiveAnalysis(){
+ if(!video)throw Error("No video selected");
+ const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw Error("Web Audio unavailable");
+ audioCtx=audioCtx||new AC();await audioCtx.resume();
+ if(!mediaAnalyser){
+  mediaAnalyser=audioCtx.createAnalyser();mediaAnalyser.fftSize=1024;mediaAnalyser.smoothingTimeConstant=0.35;
+  mediaSource=audioCtx.createMediaElementSource(video);mediaSource.connect(mediaAnalyser);mediaAnalyser.connect(audioCtx.destination);
+ }
+ liveAuto=true;liveLastPeak=-1;liveSamples=[];
+ msg("Live analysis ready. Press Play video + haptics; loud audio peaks will trigger vibration and add timeline cues.","ok");
+}
+function sampleLiveAudio(){
+ if(!liveAuto||!mediaAnalyser||!video||video.paused)return;
+ const data=new Uint8Array(mediaAnalyser.fftSize);mediaAnalyser.getByteTimeDomainData(data);
+ let sum=0;for(let i=0;i<data.length;i++){const x=(data[i]-128)/128;sum+=x*x;}
+ const rms=Math.sqrt(sum/data.length),t=video.currentTime;
+ liveSamples.push(rms);if(liveSamples.length>25)liveSamples.shift();
+ const avg=liveSamples.reduce((a,b)=>a+b,0)/(liveSamples.length||1);
+ if(liveSamples.length>=8&&rms>Math.max(0.11,avg*1.65)&&t-liveLastPeak>0.32){
+  const pat=rms>0.28?patterns.impact:patternNow();
+  vibrate(pat);cues.push({id:Date.now()+Math.random(),time:t,pattern:[...pat],label:"Live · audio peak",source:"auto"});
+  cues.sort((a,b)=>a.time-b.time);renderCues();liveLastPeak=t;
+ }
+}
+async function analyzeAudio(file,duration){
+ const AC=window.AudioContext||window.webkitAudioContext;
+ if(!AC)throw Error("Web Audio unavailable");
+ audioCtx=audioCtx||new AC();
+ if(audioCtx.state==="suspended")await audioCtx.resume();
+ const buffer=await audioCtx.decodeAudioData(await file.arrayBuffer());
+ const channels=buffer.numberOfChannels,sr=buffer.sampleRate,win=Math.max(1,Math.floor(sr*0.05)),env=[];
+ for(let i=0;i<buffer.length;i+=win){
+  let sum=0,n=0;
+  for(let ch=0;ch<channels;ch++){const data=buffer.getChannelData(ch),end=Math.min(i+win,buffer.length);for(let j=i;j<end;j++){sum+=data[j]*data[j];n++;}}
+  env.push({time:i/sr,rms:Math.sqrt(sum/Math.max(1,n))});
+ }
+ if(env.length<3)return [];
+ const sorted=env.map(v=>v.rms).sort((a,b)=>a-b);
+ const p55=sorted[Math.floor((sorted.length-1)*.55)]||0;
+ const p85=sorted[Math.floor((sorted.length-1)*.85)]||0;
+ const threshold=Math.max(.009,Math.min(p85,Math.max(p55*1.35,.018)));
+ const active=env.map(v=>v.rms>=threshold);
+ // Bridge short dips in speech/music so a sustained loud section remains one cue.
+ for(let i=1;i<active.length-2;i++)if(!active[i]&&active[i-1]&&!active[i+1]&&active[i+2])active[i]=true;
+ const regions=[];let begin=-1;
+ for(let i=0;i<=active.length;i++){
+  const on=i<active.length&&active[i];
+  if(on&&begin<0)begin=i;
+  if(!on&&begin>=0){
+   const dur=(i-begin)*.05;
+   if(dur>=.20){
+    let peak=0;for(let j=begin;j<i;j++)peak=Math.max(peak,env[j].rms);
+    regions.push({time:env[begin].time,duration:dur,peak});
+   }
+   begin=-1;
+  }
+ }
+ const merged=[];
+ for(const r of regions){
+  const prev=merged[merged.length-1];
+  if(prev&&r.time-(prev.time+prev.duration)<.18){prev.duration=r.time+r.duration-prev.time;prev.peak=Math.max(prev.peak,r.peak);}
+  else merged.push({...r});
+ }
+ return merged.slice(0,350).map(r=>{
+  // Vibration API interprets even indices as vibration durations and odd indices as pauses.
+  // Split long durations into 5s chunks with tiny gaps for broad device compatibility.
+  let left=Math.max(100,Math.round(r.duration*1000));const pattern=[];
+  while(left>0){const part=Math.min(left,5000);pattern.push(part);left-=part;if(left>0)pattern.push(35);}
+  return {time:r.time,duration:r.duration,strength:r.peak,pattern};
+ });
+}
+</script></body></html>
